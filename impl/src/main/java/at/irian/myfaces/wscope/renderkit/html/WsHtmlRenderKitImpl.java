@@ -18,33 +18,21 @@
  */
 package at.irian.myfaces.wscope.renderkit.html;
 
-import org.apache.myfaces.application.StateCache;
-import org.apache.myfaces.application.StateCacheFactory;
+import org.apache.myfaces.buildtools.maven2.plugin.builder.annotation.JSFRenderKit;
+import org.apache.myfaces.renderkit.html.HtmlRenderKitImpl;
 
-import javax.faces.context.FacesContext;
+import java.lang.reflect.Field;
 
-public class StateCacheFactoryImpl extends StateCacheFactory
-{
+@JSFRenderKit(renderKitId = "HTML_BASIC")
+public class WsHtmlRenderKitImpl extends HtmlRenderKitImpl {
 
-    private StateCache _clientSideStateCache;
-    private StateCache _serverSideStateCache;
-    
-    public StateCacheFactoryImpl()
-    {
-        _clientSideStateCache = new ClientSideStateCacheImpl();
-        _serverSideStateCache = new ServerSideStateCacheImpl();
-    }
-
-    @Override
-    public StateCache getStateCache(FacesContext facesContext)
-    {
-        if (facesContext.getApplication().getStateManager().isSavingStateInClient(facesContext))
-        {
-            return _clientSideStateCache;
-        }
-        else
-        {
-            return _serverSideStateCache;
+    public WsHtmlRenderKitImpl() {
+        try {
+            Field field = HtmlRenderKitImpl.class.getDeclaredField("_responseStateManager");
+            field.setAccessible(true);
+            field.set(this, new WsHtmlResponseStateManager());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new IllegalStateException("Error setting field _responseStateManager", e);
         }
     }
 }

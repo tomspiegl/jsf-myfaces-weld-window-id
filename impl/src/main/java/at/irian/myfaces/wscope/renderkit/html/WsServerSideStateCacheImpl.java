@@ -42,18 +42,18 @@ import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-class ServerSideStateCacheImpl extends StateCache<Object, Object>
+class WsServerSideStateCacheImpl extends StateCache<Object, Object>
 {
-    private static final Logger log = Logger.getLogger(ServerSideStateCacheImpl.class.getName());
+    private static final Logger log = Logger.getLogger(WsServerSideStateCacheImpl.class.getName());
     
     private static final String SERIALIZED_VIEW_SESSION_ATTR=
-        ServerSideStateCacheImpl.class.getName() + ".SERIALIZED_VIEW";
+        WsServerSideStateCacheImpl.class.getName() + ".SERIALIZED_VIEW";
     
     private static final String RESTORED_SERIALIZED_VIEW_REQUEST_ATTR = 
-        ServerSideStateCacheImpl.class.getName() + ".RESTORED_SERIALIZED_VIEW";
+        WsServerSideStateCacheImpl.class.getName() + ".RESTORED_SERIALIZED_VIEW";
 
     private static final String RESTORED_VIEW_KEY_REQUEST_ATTR = 
-        ServerSideStateCacheImpl.class.getName() + ".RESTORED_VIEW_KEY";
+        WsServerSideStateCacheImpl.class.getName() + ".RESTORED_VIEW_KEY";
     
     /**
      * Defines the amount (default = 20) of the latest views are stored in session.
@@ -204,6 +204,11 @@ class ServerSideStateCacheImpl extends StateCache<Object, Object>
           }
       }
       return null;
+    }
+
+    @Override
+    public String createCryptographicallyStrongTokenFromSession(FacesContext context) {
+        return null;
     }
 
     protected void saveSerializedViewInServletSession(FacesContext context,

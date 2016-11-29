@@ -15,10 +15,6 @@
     <packaging>jar</packaging>
     <name>JSF Window Scope Support - Impl</name>
 
-    <properties>
-        <jsf-myfaces.version>2.1.7</jsf-myfaces.version>
-    </properties>
-
     <dependencies>
 
         <dependency>

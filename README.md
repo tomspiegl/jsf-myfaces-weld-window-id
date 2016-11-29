@@ -46,7 +46,7 @@ Add the render-kit config to your faces-config.xml (Enables window scope state m
 ```xml
     <render-kit>
         <render-kit-id>HTML_BASIC</render-kit-id>
-        <render-kit-class>at.irian.myfaces.wscope.renderkit.html.HtmlRenderKitImpl</render-kit-class>
+        <render-kit-class>at.irian.myfaces.wscope.renderkit.html.WsHtmlRenderKitImpl</render-kit-class>
     </render-kit>
 ```
 

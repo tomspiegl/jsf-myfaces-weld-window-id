@@ -19,37 +19,30 @@
 package at.irian.myfaces.wscope.renderkit.html;
 
 import org.apache.myfaces.application.StateCache;
+import org.apache.myfaces.application.StateCacheFactory;
 
 import javax.faces.context.FacesContext;
 
-class ClientSideStateCacheImpl extends StateCache<Object, Object>
+public class WsStateCacheFactoryImpl extends StateCacheFactory
 {
 
-    @Override
-    public Object saveSerializedView(FacesContext facesContext,
-            Object serializedView)
+    private StateCache _serverSideStateCache;
+    
+    public WsStateCacheFactoryImpl()
     {
-        return serializedView;
+        _serverSideStateCache = new WsServerSideStateCacheImpl();
     }
 
     @Override
-    public Object restoreSerializedView(FacesContext facesContext,
-            String viewId, Object viewState)
+    public StateCache getStateCache(FacesContext facesContext)
     {
-        return viewState;
+        if (facesContext.getApplication().getStateManager().isSavingStateInClient(facesContext))
+        {
+            throw new IllegalStateException("Client side state saving is not supported.");
+        }
+        else
+        {
+            return _serverSideStateCache;
+        }
     }
-
-    @Override
-    public Object encodeSerializedState(FacesContext facesContext,
-            Object serializedView)
-    {
-        return serializedView;
-    }
-
-    @Override
-    public boolean isWriteStateAfterRenderViewRequired(FacesContext facesContext)
-    {
-        return true;
-    }
-
 }
