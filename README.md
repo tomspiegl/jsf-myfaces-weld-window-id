@@ -37,7 +37,7 @@ Add the dependency to your pom.xml
     <dependency>
         <groupId>at.irian.myfaces.wscope</groupId>
         <artifactId>jsf-wscope-impl</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </dependency>
 ```
 
