@@ -932,7 +932,7 @@ class WsServerSideStateCacheImpl extends StateCache<Object, Object>
 
         SerializedViewCollection getViewCollection(String windowId) {
             if (!viewCollections.containsKey(windowId)) {
-                throw new IllegalStateException("WindowCollection does not contain windowId " + windowId);
+                initWindowId(windowId);
             }
             return viewCollections.get(windowId);
         }
