@@ -27,22 +27,25 @@
 </h:head>
 <h:body>
     <h:outputStylesheet name="style.css" library="css"/>
-    <div id="container">
-        <h1>Window Scoped Example</h1>
-        <p>
-            <a href="./helloWorld.xhtml" target="_blank">Open new tab (with new windowId url param)</a>
-        </p>
-        <p>
-            <h:outputText style="font-size:14px;font-weight: bold" value="#{helloWorld.greeting}"/>
-        </p>
-        <p>
-            <h:form>
-                <h:commandButton value="Refresh State" />
-            </h:form>
-        </p>
-        <p>
-            <h:link value="Home" outcome="helloWorld"/>
-        </p>
-    </div>
+    <h:form>
+        <div id="container">
+            <h1>Window Scoped Example</h1>
+            <p>
+                <a href="./helloWorld.xhtml" target="_blank">Open new tab (with new windowId url param)</a>
+            </p>
+            <p>
+                <h:outputText id="greeting" style="font-size:14px;font-weight: bold" value="#{helloWorld.greeting}"/>
+            </p>
+            <p>
+                <h:commandButton value="Refresh State">
+                    <f:ajax execute="@form" render="greeting" />
+                </h:commandButton>
+
+            </p>
+            <p>
+                <h:link value="Home" outcome="helloWorld"/>
+            </p>
+        </div>
+    </h:form>
 </h:body>
 </html>

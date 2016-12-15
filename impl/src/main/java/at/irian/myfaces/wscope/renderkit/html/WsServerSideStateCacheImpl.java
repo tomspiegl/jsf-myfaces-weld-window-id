@@ -22,6 +22,7 @@ import org.apache.commons.collections.map.AbstractReferenceMap;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.myfaces.application.StateCache;
 import org.apache.myfaces.buildtools.maven2.plugin.builder.annotation.JSFWebConfigParam;
+import org.apache.myfaces.extensions.cdi.jsf.impl.util.RequestCache;
 import org.apache.myfaces.shared.renderkit.RendererUtils;
 import org.apache.myfaces.shared.util.MyFacesObjectInputStream;
 import org.apache.myfaces.shared.util.WebConfigParamUtils;
@@ -188,7 +189,7 @@ class WsServerSideStateCacheImpl extends StateCache<Object, Object>
     private String calcWindowId(FacesContext context) {
         String windowId = context.getExternalContext().getRequestParameterMap().get("windowId");
         if (windowId == null) {
-            windowId = "default";
+            windowId = RequestCache.getWindowContextManager().getCurrentWindowContext().getId();
         }
         return windowId;
     }
