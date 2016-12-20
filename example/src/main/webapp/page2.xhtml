@@ -21,13 +21,39 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:a4j="http://richfaces.org/a4j">
 <h:head>
     <title>Hello World</title>
 </h:head>
 <h:body>
-    <h:outputStylesheet name="style.css" library="css"/>
-    <h:form>
+
+    <script type="text/javascript">
+        //<![CDATA[
+        jsf.ajax.addOnEvent(updateViewState);
+
+        function updateViewState(data) {
+            var ajaxStatus = data.status;
+            switch (ajaxStatus) {
+                case "success": // When ajax response is successfully processed.
+                    try {
+                        var viewState = data.responseText.match('ViewState\\"\\>\\<\\!\\[CDATA.([^\\]]+)');
+                        if (Array.isArray(viewState) && viewState.length > 1) {
+                            document.getElementsByName("javax.faces.ViewState").forEach(function(input) {
+                                input.value = viewState[1];
+                            });
+                        }
+                    } catch(err) {
+                        console.log("Error handling javax.faces.ViewState:" + err);
+                    }
+                    break;
+            }
+        }
+        //]]>
+    </script>
+
+    <h2>First Form (ajax poll)</h2>
+    <h:form id="readForm">
         <div id="container">
             <h1>Window Scoped Example</h1>
             <p>
@@ -38,14 +64,27 @@
             </p>
             <p>
                 <h:commandButton value="Refresh State">
-                    <f:ajax execute="@form" render="greeting" />
+                    <f:ajax execute="@form" render="readForm" />
                 </h:commandButton>
 
             </p>
             <p>
                 <h:link value="Home" outcome="helloWorld"/>
             </p>
+
+            <a4j:poll id="poll" interval="3000" render="@form"/>
         </div>
+    </h:form>
+    <h2>Second Form</h2>
+    <h:form id="updateForm">
+        <h:panelGrid columns="2">
+            <h:outputLabel for="name" value="Please enter your name"/>
+            <h:inputText id="name" value="#{helloWorld.name}" required="true"/>
+            <h:commandButton value="Press me" action="#{helloWorld.send}">
+                <f:ajax execute="@form" render=":updateForm" />
+            </h:commandButton>
+            <h:messages showDetail="true" showSummary="false"/>
+        </h:panelGrid>
     </h:form>
 </h:body>
 </html>

@@ -58,7 +58,7 @@
         <description>Only applicable if state saving method is "server" (= default).
             Defines the amount (default = 20) of the latest views are stored in session.</description>
         <param-name>org.apache.myfaces.NUMBER_OF_VIEWS_IN_SESSION</param-name>
-        <param-value>2</param-value>
+        <param-value>5</param-value>
     </context-param>
     <context-param>
         <description>Only applicable if state saving method is "server" (= default).
@@ -90,6 +90,8 @@
             org.apache.webbeans.servlet.WebBeansConfigurationListener
         </listener-class>
     </listener>
+
+    <!-- Defining and mapping the RichFaces filter -->
 
     <!-- Faces Servlet -->
     <servlet>

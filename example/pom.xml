@@ -23,7 +23,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>at.irian.myfaces.wscope</groupId>
         <artifactId>window-scope-support-master</artifactId>
@@ -32,8 +31,22 @@
     </parent>
 
     <artifactId>jsf-wscope-example</artifactId>
+
     <packaging>jar</packaging>
     <name>JSF Window Scope Support - Example</name>
+    <build>
+        <finalName>window-scope-support-example</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <!-- Instructions 
       - Run using jetty 
@@ -52,19 +65,9 @@
           mvn clean -Pbundle-mojarra install
      -->
 
-    <build>
-        <finalName>window-scope-support-example</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <properties>
+        <richfaces.version>4.3.7.Final</richfaces.version>
+    </properties>
 
     <!-- Project dependencies -->
     <dependencies>
@@ -177,6 +180,30 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- richfaces -->
+        <dependency>
+            <groupId>org.richfaces.ui</groupId>
+            <artifactId>richfaces-components-ui</artifactId>
+            <version>${richfaces.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.richfaces.ui</groupId>
+            <artifactId>richfaces-components-api</artifactId>
+            <version>${richfaces.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.richfaces.core</groupId>
+            <artifactId>richfaces-core-impl</artifactId>
+            <version>${richfaces.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.richfaces.core</groupId>
+            <artifactId>richfaces-core-api</artifactId>
+            <version>${richfaces.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.myfaces.extensions.cdi.modules</groupId>
