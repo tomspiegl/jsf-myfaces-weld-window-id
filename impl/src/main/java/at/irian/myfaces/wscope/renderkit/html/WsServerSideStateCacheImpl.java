@@ -22,6 +22,7 @@ import org.apache.commons.collections.map.AbstractReferenceMap;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.myfaces.application.StateCache;
 import org.apache.myfaces.buildtools.maven2.plugin.builder.annotation.JSFWebConfigParam;
+import org.apache.myfaces.extensions.cdi.core.api.scope.conversation.WindowContext;
 import org.apache.myfaces.extensions.cdi.jsf.impl.util.RequestCache;
 import org.apache.myfaces.shared.renderkit.RendererUtils;
 import org.apache.myfaces.shared.util.MyFacesObjectInputStream;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
@@ -186,14 +186,6 @@ class WsServerSideStateCacheImpl extends StateCache<Object, Object>
 
     //------------------------------------- METHODS COPIED FROM JspStateManagerImpl--------------------------------
 
-    private String calcWindowId(FacesContext context) {
-        String windowId = context.getExternalContext().getRequestParameterMap().get("windowId");
-        if (windowId == null) {
-            windowId = RequestCache.getWindowContextManager().getCurrentWindowContext().getId();
-        }
-        return windowId;
-    }
-
     protected Integer getServerStateId(Object[] state)
     {
       if (state != null)
@@ -215,13 +207,8 @@ class WsServerSideStateCacheImpl extends StateCache<Object, Object>
     protected void saveSerializedViewInServletSession(FacesContext context,
                                                       Object serializedView)
     {
-        String windowId = calcWindowId(context);
-
         Map<String, Object> sessionMap = context.getExternalContext().getSessionMap();
-        WindowCollection windowCollection = WindowCollection.fromSession(context);
-        if (!windowCollection.containsWindowId(windowId)) {
-            windowCollection.initWindowId(windowId);
-        }
+        WindowState windowState = WindowState.fromSession(context);
 
         Map<Object,Object> attributeMap = context.getAttributes();
 
@@ -243,15 +230,15 @@ class WsServerSideStateCacheImpl extends StateCache<Object, Object>
             }
         }
 
-        SerializedViewCollection viewCollection = windowCollection.getViewCollection(windowId);
+        SerializedViewCollection viewCollection = windowState.getViewCollection();
 
         viewCollection.add(context, serializeView(context, serializedView), getNextViewSequence(context), key);
 
         // replace the value to notify the container about the change
-        sessionMap.put(SERIALIZED_VIEW_SESSION_ATTR, windowCollection);
+        sessionMap.put(SERIALIZED_VIEW_SESSION_ATTR, windowState);
     }
 
-    protected Object getSerializedViewFromServletSession(FacesContext context, String windowId, String viewId, Integer sequence)
+    protected Object getSerializedViewFromServletSession(FacesContext context, String viewId, Integer sequence)
     {
         ExternalContext externalContext = context.getExternalContext();
         Map<Object, Object> attributeMap = context.getAttributes();
@@ -262,14 +249,13 @@ class WsServerSideStateCacheImpl extends StateCache<Object, Object>
         }
         else
         {
-            WindowCollection windowCollection = (WindowCollection) externalContext
-                    .getSessionMap().get(SERIALIZED_VIEW_SESSION_ATTR);
-            if (windowCollection != null)
+            WindowState windowState = WindowState.fromSession(context);
+            if (windowState != null)
             {
 
                 if (sequence != null)
                 {
-                    Object state = windowCollection.getViewCollection(windowId).get(sequence, viewId);
+                    Object state = windowState.getViewCollection().get(sequence, viewId);
                     if (state != null)
                     {
                         serializedView = deserializeView(state);
@@ -856,11 +842,9 @@ class WsServerSideStateCacheImpl extends StateCache<Object, Object>
 
         Integer serverStateId = getServerStateId((Object[]) viewState);
 
-        String windowId = calcWindowId(facesContext);
-
         return (serverStateId == null)
                 ? null
-                : getSerializedViewFromServletSession(facesContext, windowId, viewId, serverStateId);
+                : getSerializedViewFromServletSession(facesContext, viewId, serverStateId);
     }
 
     public Object encodeSerializedState(FacesContext facesContext, Object serializedView)
@@ -900,46 +884,38 @@ class WsServerSideStateCacheImpl extends StateCache<Object, Object>
         return _numberOfSequentialViewsInSession;
     }
 
-    static final class WindowCollection {
-        private ConcurrentHashMap<String, SerializedViewCollection> viewCollections;
+    @SuppressWarnings("WeakerAccess")
+    public static final class WindowState {
+        private final String windowId;
+        private final SerializedViewCollection state;
 
-        private WindowCollection() {
-            this.viewCollections = new ConcurrentHashMap<>();
+        public WindowState(String windowId, SerializedViewCollection state) {
+            this.windowId = windowId;
+            this.state = state;
         }
 
-        static WindowCollection fromSession(FacesContext facesContext) {
-            WindowCollection windowCollection = (WindowCollection) facesContext.getExternalContext()
-                    .getSessionMap().get(SERIALIZED_VIEW_SESSION_ATTR);
-            if (windowCollection == null) {
-                Object session = facesContext.getExternalContext().getSession(false);
-                if (session != null) {
-                    //noinspection SynchronizationOnLocalVariableOrMethodParameter
-                    synchronized (session) {
-                        windowCollection = new WindowCollection();
-                    }
-                } else {
-                    windowCollection = new WindowCollection();
-                }
+        static WindowState fromSession(FacesContext context) {
+            WindowContext currentWindowContext = RequestCache.getCurrentWindowContext();
+            WindowState windowState = currentWindowContext.getAttribute(WindowState.class.getName(), WindowState.class);
+            if (windowState == null) {
+                windowState = new WindowState(calcWindowId(context), new SerializedViewCollection());
+                currentWindowContext.setAttribute(WindowState.class.getName(), windowState);
             }
-            return windowCollection;
+            return windowState;
         }
 
-        void initWindowId(String windowId) {
-            if (viewCollections.containsKey(windowId)) {
-                throw new IllegalStateException("WindowCollection already contains windowId " + windowId);
+        static String calcWindowId(FacesContext context) {
+            String windowId = context.getExternalContext().getRequestParameterMap().get("windowId");
+            if (windowId == null) {
+                windowId = RequestCache.getWindowContextManager().getCurrentWindowContext().getId();
             }
-            this.viewCollections.put(windowId, new SerializedViewCollection());
+            return windowId;
         }
 
-        SerializedViewCollection getViewCollection(String windowId) {
-            if (!viewCollections.containsKey(windowId)) {
-                initWindowId(windowId);
-            }
-            return viewCollections.get(windowId);
+
+        SerializedViewCollection getViewCollection() {
+            return state;
         }
 
-        boolean containsWindowId(String windowId) {
-            return viewCollections.containsKey(windowId);
-        }
     }
 }
